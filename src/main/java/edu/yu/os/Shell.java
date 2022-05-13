@@ -1,0 +1,42 @@
+package edu.yu.os;
+
+import java.io.File;
+import java.io.IOException;
+
+import edu.yu.os.ISOHandler.Fat32File;
+
+public class Shell {
+	public static void main(String[] args) throws IOException {
+		// ISOHandler iso = new ISOHandler(args[0]);
+		ISOHandler fat32 = new ISOHandler(args[0]);
+		fat32.ls(null);
+		Fat32File fatFile = fat32.getFileFat(new File("dir/a/spec/fatspec.pdf"));
+		System.out.println("File name: " + fatFile.filename);
+		System.out.println("File size: " + fatFile.size);
+	}
+
+	// Description: exits your shell-like utility
+	private static void stop() {
+		System.exit(0);
+	}
+
+	/*
+	 * Description: prints out information about the following fields in both hex
+	 * and base 10. Be careful to use the proper endian-ness: o BPB_BytesPerSec o
+	 * BPB_SecPerClus o BPB_RsvdSecCnt o BPB_NumFATS o BPB_FATSz32
+	 */
+	private static String info() {
+		return "";
+	}
+
+	/*
+	 * Description: For the file or directory at the relative or absolute path
+	 * specified in FILE_NAME or DIR_NAME, prints the size of the file or directory,
+	 * the attributes of the file or directory, and the first cluster number of the
+	 * file or directory. Return an error if FILE_NAME/DIR_NAME does not exist (see
+	 * example below). (Note: The size of a directory will always be zero.)
+	 */
+	private static void stat(String file_path) {
+		System.exit(0);
+	}
+}
