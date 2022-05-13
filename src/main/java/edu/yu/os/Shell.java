@@ -10,9 +10,15 @@ public class Shell {
 		// ISOHandler iso = new ISOHandler(args[0]);
 		ISOHandler fat32 = new ISOHandler(args[0]);
 		fat32.ls(null);
-		Fat32File fatFile = fat32.getFileFat(new File("dir/a/spec/fatspec.pdf"));
+		Fat32File fatFile = fat32.getFileFat(new File("dir/a/spec/"));
 		System.out.println("File name: " + fatFile.filename);
 		System.out.println("File size: " + fatFile.size);
+		System.out.println();
+
+		fat32.read("/fsinfo.txt", 0, 1000);
+		System.out.println();
+		fat32.read("/dir/a/spec/fatspec.pdf", 0, 1000);
+		System.out.println();
 	}
 
 	// Description: exits your shell-like utility

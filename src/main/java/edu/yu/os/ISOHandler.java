@@ -102,7 +102,43 @@ public class ISOHandler {
 	 * corresponding ascii character. Else, print " 0xNN ", where NN is the hex
 	 * value of the byte).
 	 */
-	private void read(String filename, long offset, long num_bytes) throws IOException {
+	public void read(String filename, long offset, long num_bytes) throws IOException {
+		Fat32File fat32File = getFileFat(new File(filename));
+		System.out.println(fat32File);
+		if (fat32File == null) {
+			return;
+		}
+		if (fat32File.directory) {
+			System.out.println(fat32File.filename + " is a directory.");
+			return;
+		}
+		int clusterNumber = fat32File.cluster;
+
+		while (offset >= entireSectorSize) {
+			clusterNumber = readFromFat(clusterNumber);
+			offset -= entireSectorSize;
+			if ((clusterNumber & 0x0FFFFFF8) == 0x0FFFFFF8) {
+				System.out.println("Offset greater than file length");
+				return;
+			}
+		}
+		byte[] buffer = new byte[entireSectorSize];
+		while ((clusterNumber & 0x0FFFFFF8) != 0x0FFFFFF8) {
+			readFromCluster(clusterNumber, buffer);
+			// safe cast because at this point offset must be less than an int because it
+			// can't be larger than entireSectorSize
+			for (int i = (int) offset; i < buffer.length && num_bytes > 0; i++, num_bytes--) {
+				int curr = Byte.toUnsignedInt(buffer[i]);
+				if (curr < 128) {
+					System.out.print((char) curr);
+				} else {
+					System.out.print("0x" + Integer.toHexString(curr));
+				}
+				offset = 0;
+			}
+			clusterNumber = readFromFat(clusterNumber);
+		}
+
 		return;
 	}
 
@@ -111,6 +147,12 @@ public class ISOHandler {
 		Fat32File returnDirectory = null;
 		findnextpath: for (Path path : file.toPath()) {
 			String pathName = path.toString();
+			if (pathName.equals(".")) {
+				continue;
+			}
+			if (returnDirectory != null && !returnDirectory.directory) {
+				System.out.println(returnDirectory.filename + " is not a directory");
+			}
 			for (Fat32File df : getContentsOfDir(currPos)) {
 				if (df.filename.equalsIgnoreCase(pathName)) {
 					currPos = df.cluster;
