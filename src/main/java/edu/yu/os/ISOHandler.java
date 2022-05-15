@@ -70,8 +70,8 @@ public class ISOHandler {
 	 * show the new current directory. Return an error if DIR_NAME does not exist or
 	 * is not a directory.
 	 */
-	public String cd(File file) {
-		Fat32File fat32 = getFileFat(file);
+	public String cd(String directory) {
+		Fat32File fat32 = getFileFat(new File(directory));
 		if (fat32 == null) {
 			return returnAndClearBuffer();
 		}
