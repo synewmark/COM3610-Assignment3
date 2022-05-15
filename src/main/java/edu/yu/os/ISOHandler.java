@@ -79,7 +79,7 @@ public class ISOHandler {
 			returnMessage.setLength(0);
 			return (fat32.filename + " is not a directory");
 		}
-		currFat = fat32.cluster;
+		currFat = fat32.cluster != 0 ? fat32.cluster : 2;
 		currDir = new File(returnMessage.toString());
 		returnMessage.setLength(0);
 		return "";
@@ -98,7 +98,6 @@ public class ISOHandler {
 		if (dir == null) {
 			return returnAndClearBuffer();
 		}
-		System.out.println(dir.cluster);
 		for (Fat32File df : getContentsOfDir(dir.cluster)) {
 			returnMessage.append(df.filename + " ");
 		}
@@ -193,6 +192,9 @@ public class ISOHandler {
 					currPos = df.cluster;
 					returnDirectory = df;
 					if (pathName.equals("..")) {
+						if (df.cluster == 0) {
+							df.cluster = 2;
+						}
 						movingDir = movingDir.getParentFile();
 					} else {
 						movingDir = new File(movingDir, df.filename);
@@ -303,7 +305,7 @@ public class ISOHandler {
 
 	static class Fat32File {
 		final String filename;
-		final int cluster;
+		int cluster;
 		final int size;
 
 		final boolean readonly;

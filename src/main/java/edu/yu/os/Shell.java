@@ -1,6 +1,5 @@
 package edu.yu.os;
 
-import java.io.File;
 import java.io.IOException;
 
 public class Shell {
@@ -19,17 +18,18 @@ public class Shell {
 //		System.out.println();
 //		fat32.read("\\const.txt", 0, 1000);
 //		System.out.println();
+//		System.out.println(fat32.size("const.txt"));
+//		System.out.println(fat32.ls("\\"));
 
-		System.out.println(fat32.ls("\\"));
+		System.out.println(fat32.cd("\\dir\\a\\spec"));
 
-		System.out.println(fat32.cd(new File("\\dir\\a\\spec")));
+//		System.out.println(fat32.getCurrDir());
+		System.out.println(fat32.ls("..\\..\\..\\"));
 
-		System.out.println(fat32.getCurrDir());
-
-		System.out.println(fat32.cd(new File("..\\..\\")));
-		System.out.println(fat32.getCurrDir());
-		System.out.println(fat32.size("\\const.txt"));
-		System.out.println(fat32.read("\\const.txt", 45118, 1));
+		System.out.println(fat32.cd("..\\..\\..\\"));
+//		System.out.println(fat32.getCurrDir());
+		System.out.println(fat32.size("const.txt"));
+//		System.out.println(fat32.read("\\const.txt", 45118, 1));
 
 	}
 
