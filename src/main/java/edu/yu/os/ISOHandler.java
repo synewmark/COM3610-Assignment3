@@ -14,12 +14,16 @@ import java.util.List;
 public class ISOHandler {
 	private static final int RootFat = 2;
 	private static final int BytePerSector = 512;
+	private final Fat32File rootFatFile;
+
 	private int fat32Start;
 	private int clusterStart;
 	private short SectorPerCluster;
 	private int entireSectorSize;
 
 	private int currFat;
+
+	private final StringBuilder returnMessage = new StringBuilder(100);
 
 	File currDir = new File(File.separator);
 
@@ -53,6 +57,7 @@ public class ISOHandler {
 //		currentDirectory = fat32Start * BytePerSector;
 		fat32.seek(clusterStart);
 		currFat = RootFat;
+		rootFatFile = getRootFatFile();
 	}
 
 	public String getCurrDir() {
@@ -65,16 +70,20 @@ public class ISOHandler {
 	 * show the new current directory. Return an error if DIR_NAME does not exist or
 	 * is not a directory.
 	 */
-	public void cd(File file) {
+	public String cd(File file) {
 		Fat32File fat32 = getFileFat(file);
 		if (fat32 == null) {
-			return;
+			return returnAndClearBuffer();
 		}
 		if (!fat32.directory) {
-			System.out.println(fat32.filename + " is not a directory");
-			return;
+			returnMessage.setLength(0);
+			return (fat32.filename + " is not a directory");
 		}
-		currDir = file.isAbsolute() ? file : new File(currDir, file.toString());
+		currFat = fat32.cluster;
+		currDir = new File(returnMessage.toString());
+		returnMessage.setLength(0);
+		return "";
+
 	}
 
 	/*
@@ -83,15 +92,18 @@ public class ISOHandler {
 	 * including hidden files (in other words, it should behave like the real “ls
 	 * -a”). Display an error message if DIR_NAME is not a directory.
 	 */
-	public void ls(String director_path) {
+	public String ls(String director_path) {
 		// find the cluster the directory starts at
-//		int dir = findDirectory(director_path);
-		int dir = 2;
-
-		for (Fat32File df : getContentsOfDir(dir)) {
-			System.out.println(df.filename);
+		Fat32File dir = getFileFat(new File(director_path));
+		if (dir == null) {
+			return returnAndClearBuffer();
 		}
-
+		for (Fat32File df : getContentsOfDir(dir.cluster)) {
+			returnMessage.append(df.filename + " ");
+		}
+		String returnMsg = returnMessage.toString();
+		returnMessage.setLength(0);
+		return returnMsg;
 	}
 
 	/*
@@ -99,13 +111,12 @@ public class ISOHandler {
 	 * FILE_NAME, prints the size of file. Return an error if FILE_NAME does not
 	 * exist or is not a file.
 	 */
-	private static long size(String file_path) {
-		File file = new File(file_path);
-		if (!file.isFile()) {
-			System.out.println("Error: Not a file");
-			return -1;
+	public String size(String file_path) {
+		Fat32File fatFile = getFileFat(new File(file_path));
+		if (fatFile == null) {
+			return returnAndClearBuffer();
 		}
-		return file.length();
+		return Integer.toBinaryString(fatFile.size);
 	}
 
 	/*
@@ -120,6 +131,7 @@ public class ISOHandler {
 		Fat32File fat32File = getFileFat(new File(filename));
 		System.out.println(fat32File);
 		if (fat32File == null) {
+			System.out.println(returnMessage.toString());
 			return;
 		}
 		if (fat32File.directory) {
@@ -157,28 +169,46 @@ public class ISOHandler {
 	}
 
 	public Fat32File getFileFat(File file) {
-		int currPos = file.isAbsolute() ? RootFat : currFat;
+		if (file.toString().equals(File.separator)) {
+			returnMessage.append(File.separatorChar);
+			return rootFatFile;
+		}
+		int currPos = isAbsolute(file) ? RootFat : currFat;
+		File movingDir = isAbsolute(file) ? new File(File.separator) : currDir;
 		Fat32File returnDirectory = null;
 		findnextpath: for (Path path : file.toPath()) {
 			String pathName = path.toString();
 			if (pathName.equals(".")) {
 				continue;
 			}
+
 			if (returnDirectory != null && !returnDirectory.directory) {
-				System.out.println(returnDirectory.filename + " is not a directory");
+				returnMessage.append(returnDirectory.filename + " is not a directory");
+				return null;
 			}
 			for (Fat32File df : getContentsOfDir(currPos)) {
+				if (pathName.equals("..") && currPos == RootFat) {
+					returnMessage.append("Could not cd .. from root");
+					return null;
+				}
 				if (df.filename.equalsIgnoreCase(pathName)) {
 					currPos = df.cluster;
 					returnDirectory = df;
+					if (pathName.equals("..")) {
+						movingDir = movingDir.getParentFile();
+					} else {
+						movingDir = new File(movingDir, df.filename);
+					}
 					continue findnextpath;
 				}
 			}
 			// if continue fails, i.e. a matching directory could not be found
-			System.out.println("Could not find path: " + pathName + " in path: " + file);
+			returnMessage.append("Could not find path: " + pathName + " in path: " + file);
 			return null;
 		}
+		returnMessage.append(movingDir.toString());
 		return returnDirectory;
+
 	}
 
 	private int readFromFat(int fatNumber) {
@@ -238,8 +268,27 @@ public class ISOHandler {
 		return returnArray;
 	}
 
+	private Fat32File getRootFatFile() {
+		byte[] buffer = new byte[32];
+		readFromCluster(RootFat, buffer);
+		for (int i = 0; i < 11; i++) {
+			buffer[i] = 0;
+		}
+		return new Fat32File(buffer, 0);
+	}
+
 	public File getWorkingDirectory() {
 		return currDir;
+	}
+
+	private boolean isAbsolute(File file) {
+		return file.toString().startsWith(File.separator);
+	}
+
+	private String returnAndClearBuffer() {
+		String msg = returnMessage.toString();
+		returnMessage.setLength(0);
+		return msg;
 	}
 
 	static class Fat32File {

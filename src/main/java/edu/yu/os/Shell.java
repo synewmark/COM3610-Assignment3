@@ -3,24 +3,32 @@ package edu.yu.os;
 import java.io.File;
 import java.io.IOException;
 
-import edu.yu.os.ISOHandler.Fat32File;
-
 public class Shell {
 	public static void main(String[] args) throws IOException {
 		// ISOHandler iso = new ISOHandler(args[0]);
 		ISOHandler fat32 = new ISOHandler(args[0]);
-		fat32.ls(null);
-		Fat32File fatFile = fat32.getFileFat(new File("dir/a/spec/"));
-		System.out.println("File name: " + fatFile.filename);
-		System.out.println("File size: " + fatFile.size);
+		fat32.ls("/");
+//		Fat32File fatFile = fat32.getFileFat(new File("dir/a/spec/"));
+//		System.out.println("File name: " + fatFile.filename);
+//		System.out.println("File size: " + fatFile.size);
+//
+//		System.out.println();
+//		fat32.read("\\fsinfo.txt", 0, 1000);
+//		System.out.println();
+//		fat32.read("\\dir\\a\\spec\\fatspec.pdf", 0, 1000);
+//		System.out.println();
+//		fat32.read("\\const.txt", 0, 1000);
+//		System.out.println();
 
-		System.out.println();
-		fat32.read("/fsinfo.txt", 0, 1000);
-		System.out.println();
-		fat32.read("/dir/a/spec/fatspec.pdf", 0, 1000);
-		System.out.println();
-		fat32.read("/const.txt", 0, 1000);
-		System.out.println();
+		System.out.println(fat32.cd(new File("\\dir\\a\\spec")));
+
+		System.out.println(fat32.getCurrDir());
+
+		System.out.println(fat32.cd(new File("..\\..\\")));
+		System.out.println(fat32.getCurrDir());
+
+		fat32.read("\\const.txt", 0, 100);
+
 	}
 
 	// Description: exits your shell-like utility
