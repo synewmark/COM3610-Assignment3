@@ -13,11 +13,13 @@ public class Shell {
 		Fat32File fatFile = fat32.getFileFat(new File("dir/a/spec/"));
 		System.out.println("File name: " + fatFile.filename);
 		System.out.println("File size: " + fatFile.size);
-		System.out.println();
 
+		System.out.println();
 		fat32.read("/fsinfo.txt", 0, 1000);
 		System.out.println();
 		fat32.read("/dir/a/spec/fatspec.pdf", 0, 1000);
+		System.out.println();
+		fat32.read("/const.txt", 0, 1000);
 		System.out.println();
 	}
 

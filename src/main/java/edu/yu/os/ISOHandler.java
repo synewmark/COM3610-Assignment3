@@ -10,18 +10,20 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 public class ISOHandler {
+	private static final int RootFat = 2;
 	private static final int BytePerSector = 512;
 	private int fat32Start;
 	private int clusterStart;
 	private short SectorPerCluster;
 	private int entireSectorSize;
 
-	RandomAccessFile fat32;
+	private int currFat;
 
-	private Stack<Integer> directoryList = new Stack<>();
+	File currDir = new File(File.separator);
+
+	RandomAccessFile fat32;
 
 	public ISOHandler(String iso_path) throws IOException {
 		if (!iso_path.endsWith(".img")) {
@@ -50,7 +52,11 @@ public class ISOHandler {
 		fat32Start = ReservedSectorCount * BytePerSector;
 //		currentDirectory = fat32Start * BytePerSector;
 		fat32.seek(clusterStart);
-		directoryList.add(2);
+		currFat = RootFat;
+	}
+
+	public String getCurrDir() {
+		return currDir.toString();
 	}
 
 	/*
@@ -59,8 +65,16 @@ public class ISOHandler {
 	 * show the new current directory. Return an error if DIR_NAME does not exist or
 	 * is not a directory.
 	 */
-	private String cd(String director_path) {
-		return "";
+	public void cd(File file) {
+		Fat32File fat32 = getFileFat(file);
+		if (fat32 == null) {
+			return;
+		}
+		if (!fat32.directory) {
+			System.out.println(fat32.filename + " is not a directory");
+			return;
+		}
+		currDir = file.isAbsolute() ? file : new File(currDir, file.toString());
 	}
 
 	/*
@@ -143,7 +157,7 @@ public class ISOHandler {
 	}
 
 	public Fat32File getFileFat(File file) {
-		int currPos = file.isAbsolute() ? directoryList.firstElement() : directoryList.lastElement();
+		int currPos = file.isAbsolute() ? RootFat : currFat;
 		Fat32File returnDirectory = null;
 		findnextpath: for (Path path : file.toPath()) {
 			String pathName = path.toString();
@@ -215,13 +229,17 @@ public class ISOHandler {
 				if (buffer[i] == 0) {
 					return returnArray;
 				}
-				Fat32File df = new Fat32File(buffer, i);
 
+				Fat32File df = new Fat32File(buffer, i);
 				returnArray.add(df);
 			}
 			dir = readFromFat(dir);
 		}
 		return returnArray;
+	}
+
+	public File getWorkingDirectory() {
+		return currDir;
 	}
 
 	static class Fat32File {
@@ -252,6 +270,7 @@ public class ISOHandler {
 
 			size = ((0xFF & rawBytes[offset + 31]) << 24) | ((0xFF & rawBytes[offset + 30]) << 16)
 					| ((0xFF & rawBytes[offset + 29]) << 8) | (0xFF & rawBytes[offset + 28]);
+
 			byte attribute = rawBytes[offset + 11];
 			readonly = ((attribute & 1) == 1);
 			attribute >>= 1;
