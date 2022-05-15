@@ -20,14 +20,16 @@ public class Shell {
 //		fat32.read("\\const.txt", 0, 1000);
 //		System.out.println();
 
+		System.out.println(fat32.ls("\\"));
+
 		System.out.println(fat32.cd(new File("\\dir\\a\\spec")));
 
 		System.out.println(fat32.getCurrDir());
 
 		System.out.println(fat32.cd(new File("..\\..\\")));
 		System.out.println(fat32.getCurrDir());
-
-		fat32.read("\\const.txt", 0, 100);
+		System.out.println(fat32.size("\\const.txt"));
+		System.out.println(fat32.read("\\const.txt", 45118, 1));
 
 	}
 

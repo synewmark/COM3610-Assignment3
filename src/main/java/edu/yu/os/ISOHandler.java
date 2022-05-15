@@ -98,6 +98,7 @@ public class ISOHandler {
 		if (dir == null) {
 			return returnAndClearBuffer();
 		}
+		System.out.println(dir.cluster);
 		for (Fat32File df : getContentsOfDir(dir.cluster)) {
 			returnMessage.append(df.filename + " ");
 		}
@@ -116,7 +117,7 @@ public class ISOHandler {
 		if (fatFile == null) {
 			return returnAndClearBuffer();
 		}
-		return Integer.toBinaryString(fatFile.size);
+		return Integer.toString(fatFile.size);
 	}
 
 	/*
@@ -127,26 +128,23 @@ public class ISOHandler {
 	 * corresponding ascii character. Else, print " 0xNN ", where NN is the hex
 	 * value of the byte).
 	 */
-	public void read(String filename, long offset, long num_bytes) throws IOException {
+	public String read(String filename, long offset, long num_bytes) throws IOException {
 		Fat32File fat32File = getFileFat(new File(filename));
-		System.out.println(fat32File);
 		if (fat32File == null) {
-			System.out.println(returnMessage.toString());
-			return;
+			return returnAndClearBuffer();
 		}
+		returnMessage.setLength(0);
 		if (fat32File.directory) {
-			System.out.println(fat32File.filename + " is a directory.");
-			return;
+			return (fat32File.filename + " is a directory.");
+		}
+		if (fat32File.size < (offset + num_bytes)) {
+			return ("File size too small");
 		}
 		int clusterNumber = fat32File.cluster;
 
 		while (offset >= entireSectorSize) {
 			clusterNumber = readFromFat(clusterNumber);
 			offset -= entireSectorSize;
-			if ((clusterNumber & 0x0FFFFFF8) == 0x0FFFFFF8) {
-				System.out.println("Offset greater than file length");
-				return;
-			}
 		}
 		byte[] buffer = new byte[entireSectorSize];
 		while ((clusterNumber & 0x0FFFFFF8) != 0x0FFFFFF8) {
@@ -156,16 +154,16 @@ public class ISOHandler {
 			for (int i = (int) offset; i < buffer.length && num_bytes > 0; i++, num_bytes--) {
 				int curr = Byte.toUnsignedInt(buffer[i]);
 				if (curr < 128) {
-					System.out.print((char) curr);
+					returnMessage.append((char) curr);
 				} else {
-					System.out.print("0x" + Integer.toHexString(curr));
+					returnMessage.append("0x" + Integer.toHexString(curr));
 				}
 				offset = 0;
 			}
 			clusterNumber = readFromFat(clusterNumber);
 		}
 
-		return;
+		return returnAndClearBuffer();
 	}
 
 	public Fat32File getFileFat(File file) {
@@ -248,6 +246,17 @@ public class ISOHandler {
 			readFromCluster(dir, buffer);
 			for (int i = 0; i < entireSectorSize; i += 32) {
 				if (dir == 2 && i == 0) {
+					for (int j = 0; j < 11; j++) {
+						buffer[j] = ' ';
+					}
+					buffer[0] = '.';
+					buffer[1] = '.';
+					Fat32File df = new Fat32File(buffer, i);
+					returnArray.add(df);
+					buffer[1] = ' ';
+					buffer[26] = 2;
+					df = new Fat32File(buffer, i);
+					returnArray.add(df);
 					continue;
 				}
 				if (buffer[i] == 'A' && ((buffer[i + 11]) & 0x0F) == 0x0F) {
@@ -272,8 +281,9 @@ public class ISOHandler {
 		byte[] buffer = new byte[32];
 		readFromCluster(RootFat, buffer);
 		for (int i = 0; i < 11; i++) {
-			buffer[i] = 0;
+			buffer[i] = ' ';
 		}
+		buffer[26] = 2;
 		return new Fat32File(buffer, 0);
 	}
 
