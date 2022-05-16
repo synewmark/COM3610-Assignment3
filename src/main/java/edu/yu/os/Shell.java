@@ -1,8 +1,11 @@
 package edu.yu.os;
 
 import java.io.IOException;
+import java.util.Scanner;
 
 public class Shell {
+	static Scanner s = new Scanner(System.in);
+
 	public static void main(String[] args) throws IOException {
 		// ISOHandler iso = new ISOHandler(args[0]);
 		ISOHandler fat32 = new ISOHandler(args[0]);
@@ -21,30 +24,38 @@ public class Shell {
 //		System.out.println(fat32.size("const.txt"));
 //		System.out.println(fat32.ls("\\"));
 
-		System.out.println(fat32.cd("\\dir\\a\\spec"));
+//		System.out.println(fat32.cd("\\dir\\a\\spec"));
 
 //		System.out.println(fat32.getCurrDir());
-		System.out.println(fat32.ls("..\\..\\..\\"));
+//		System.out.println(fat32.ls("..\\..\\..\\"));
 
-		System.out.println(fat32.cd("..\\..\\..\\"));
+//		System.out.println(fat32.cd("..\\..\\..\\"));
 //		System.out.println(fat32.getCurrDir());
-		System.out.println(fat32.size("const.txt"));
+//		System.out.println(fat32.size("const.txt"));
 //		System.out.println(fat32.read("\\const.txt", 45118, 1));
 
-	//scan infinitaley for commands
+		// scan infinitaley for commands
 		while (true) {
-			System.out.print(fat32.getWorkingDirectory()+" ");
-			String command = System.console().readLine();
+			System.out.print(fat32.getWorkingDirectory() + " ");
+			String command = s.nextLine();
 			String[] commandArray = command.split(" ");
 			switch (commandArray[0]) {
 			case "stop":
 				stop();
+				break;
 			case "info":
 				System.out.println(info());
+				break;
 			case "ls":
-				System.out.println(fat32.ls(commandArray[1]));
+				if (commandArray.length > 1) {
+					System.out.println(fat32.ls(commandArray[1]));
+				} else {
+					System.out.println(fat32.ls(""));
+				}
+				break;
 			case "stat":
 				System.out.println(stat("file_path"));
+				break;
 			case "size":
 				System.out.println(fat32.size(commandArray[1]));
 				break;
@@ -53,7 +64,7 @@ public class Shell {
 				break;
 			case "read":
 				System.out.println(fat32.read(commandArray[1], Integer.parseInt(commandArray[2]),
-				Integer.parseInt(commandArray[3])));
+						Integer.parseInt(commandArray[3])));
 				break;
 			default:
 				System.out.println("Invalid command");
