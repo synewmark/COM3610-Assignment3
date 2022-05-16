@@ -96,7 +96,7 @@ public class ISOHandler {
 	 */
 	public String ls(String director_path) {
 		// find the cluster the directory starts at
-		Fat32File dir = getFileFat(new File(director_path));
+		Fat32File dir = director_path.isEmpty() ? getFileFat(currDir) : getFileFat(new File(director_path));
 		if (dir == null) {
 			return returnAndClearBuffer();
 		}
