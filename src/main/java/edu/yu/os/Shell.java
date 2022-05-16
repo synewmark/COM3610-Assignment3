@@ -31,6 +31,35 @@ public class Shell {
 		System.out.println(fat32.size("const.txt"));
 //		System.out.println(fat32.read("\\const.txt", 45118, 1));
 
+	//scan infinitaley for commands
+		while (true) {
+			System.out.print(fat32.getWorkingDirectory()+" ");
+			String command = System.console().readLine();
+			String[] commandArray = command.split(" ");
+			switch (commandArray[0]) {
+			case "stop":
+				stop();
+			case "info":
+				System.out.println(info());
+			case "ls":
+				System.out.println(fat32.ls(commandArray[1]));
+			case "stat":
+				System.out.println(stat("file_path"));
+			case "size":
+				System.out.println(fat32.size(commandArray[1]));
+				break;
+			case "cd":
+				System.out.println(fat32.cd(commandArray[1]));
+				break;
+			case "read":
+				System.out.println(fat32.read(commandArray[1], Integer.parseInt(commandArray[2]),
+				Integer.parseInt(commandArray[3])));
+				break;
+			default:
+				System.out.println("Invalid command");
+				break;
+			}
+		}
 	}
 
 	// Description: exits your shell-like utility
@@ -54,7 +83,8 @@ public class Shell {
 	 * file or directory. Return an error if FILE_NAME/DIR_NAME does not exist (see
 	 * example below). (Note: The size of a directory will always be zero.)
 	 */
-	private static void stat(String file_path) {
+	private static String stat(String file_path) {
 		System.exit(0);
+		return "";
 	}
 }
