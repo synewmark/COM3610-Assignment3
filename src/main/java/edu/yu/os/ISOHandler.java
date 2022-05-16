@@ -70,6 +70,8 @@ public class ISOHandler {
 	 * show the new current directory. Return an error if DIR_NAME does not exist or
 	 * is not a directory.
 	 */
+	// returns empty string if successful, otherwise returns err msg
+
 	public String cd(String directory) {
 		Fat32File fat32 = getFileFat(new File(directory));
 		if (fat32 == null) {
@@ -111,6 +113,8 @@ public class ISOHandler {
 	 * FILE_NAME, prints the size of file. Return an error if FILE_NAME does not
 	 * exist or is not a file.
 	 */
+	// returns size if successful, otherwise returns err msg
+
 	public String size(String file_path) {
 		Fat32File fatFile = getFileFat(new File(file_path));
 		if (fatFile == null) {
@@ -127,6 +131,7 @@ public class ISOHandler {
 	 * corresponding ascii character. Else, print " 0xNN ", where NN is the hex
 	 * value of the byte).
 	 */
+	// returns contents if successful, otherwise returns err msg
 	public String read(String filename, long offset, long num_bytes) throws IOException {
 		Fat32File fat32File = getFileFat(new File(filename));
 		if (fat32File == null) {
