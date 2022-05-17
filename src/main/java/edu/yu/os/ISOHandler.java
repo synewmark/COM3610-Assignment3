@@ -100,6 +100,7 @@ public class ISOHandler {
 		if (dir == null) {
 			return returnAndClearBuffer();
 		}
+		returnMessage.setLength(0);
 		for (Fat32File df : getContentsOfDir(dir.cluster)) {
 			returnMessage.append(df.filename + " ");
 		}
