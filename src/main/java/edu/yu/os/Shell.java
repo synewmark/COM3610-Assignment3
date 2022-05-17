@@ -47,9 +47,7 @@ public class Shell {
 				System.out.println(info());
 				break;
 			case "ls":
-				if (commandArray[1].equals(".")) {
-					System.out.println(fat32.ls(""));
-				} else if (commandArray.length > 1) {
+				if (commandArray.length > 1) {
 					System.out.println(fat32.ls(commandArray[1]));
 				} else {
 					System.out.println(fat32.ls(""));
@@ -73,6 +71,7 @@ public class Shell {
 				break;
 			}
 		}
+
 	}
 
 	// Description: exits your shell-like utility

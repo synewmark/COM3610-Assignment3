@@ -178,7 +178,7 @@ public class ISOHandler {
 		}
 		int currPos = isAbsolute(file) ? RootFat : currFat;
 		File movingDir = isAbsolute(file) ? new File(File.separator) : currDir;
-		Fat32File returnDirectory = null;
+		Fat32File returnDirectory = currPos == RootFat ? rootFatFile : null;
 		findnextpath: for (Path path : file.toPath()) {
 			String pathName = path.toString();
 			if (pathName.equals(".")) {
@@ -291,6 +291,7 @@ public class ISOHandler {
 		for (int i = 0; i < 11; i++) {
 			buffer[i] = ' ';
 		}
+		buffer[11] = 1 << 4;
 		buffer[26] = 2;
 		return new Fat32File(buffer, 0);
 	}
