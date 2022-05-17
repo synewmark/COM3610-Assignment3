@@ -36,7 +36,7 @@ public class Shell {
 
 		// scan infinitaley for commands
 		while (true) {
-			System.out.print(fat32.getWorkingDirectory() + " ");
+			System.out.print(fat32.getWorkingDirectory() + "] ");
 			String command = s.nextLine();
 			String[] commandArray = command.split(" ");
 			switch (commandArray[0]) {
@@ -47,7 +47,9 @@ public class Shell {
 				System.out.println(info());
 				break;
 			case "ls":
-				if (commandArray.length > 1) {
+				if (commandArray[1].equals(".")) {
+					System.out.println(fat32.ls(""));
+				} else if (commandArray.length > 1) {
 					System.out.println(fat32.ls(commandArray[1]));
 				} else {
 					System.out.println(fat32.ls(""));
