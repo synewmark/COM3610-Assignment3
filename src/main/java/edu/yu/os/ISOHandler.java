@@ -83,9 +83,9 @@ public class ISOHandler {
 
 	/*
 	 * Description: For the directory at the relative or absolute path specified in
-	 * DIR_NAME, lists the contents of DIR_NAME, including “.” and “..”, and
-	 * including hidden files (in other words, it should behave like the real “ls
-	 * -a”). Display an error message if DIR_NAME is not a directory.
+	 * DIR_NAME, lists the contents of DIR_NAME, including "." and "..", and
+	 * including hidden files (in other words, it should behave like the real "ls
+	 * -a"). Display an error message if DIR_NAME is not a directory.
 	 */
 	public String ls(String director_path) {
 		// find the cluster the directory starts at
@@ -132,7 +132,7 @@ public class ISOHandler {
 	 * value of the byte).
 	 */
 	// returns contents if successful, otherwise returns err msg
-	public String read(String filename, long offset, long num_bytes) throws IOException {
+	public String read(String filename, long offset, long num_bytes) {
 		if (offset < 0) {
 			return "Error: OFFSET must be a positive value";
 		}

@@ -1,39 +1,25 @@
 package edu.yu.os;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
 
 public class Shell {
 	static Scanner s = new Scanner(System.in);
 
-	public static void main(String[] args) throws IOException {
-		// ISOHandler iso = new ISOHandler(args[0]);
-		ISOHandler fat32 = new ISOHandler(args[0]);
-//		fat32.ls("/");
-//		Fat32File fatFile = fat32.getFileFat(new File("dir/a/spec/"));
-//		System.out.println("File name: " + fatFile.filename);
-//		System.out.println("File size: " + fatFile.size);
-//
-//		System.out.println();
-//		fat32.read("\\fsinfo.txt", 0, 1000);
-//		System.out.println();
-//		fat32.read("\\dir\\a\\spec\\fatspec.pdf", 0, 1000);
-//		System.out.println();
-//		fat32.read("\\const.txt", 0, 1000);
-//		System.out.println();
-//		System.out.println(fat32.size("const.txt"));
-//		System.out.println(fat32.ls("\\"));
-
-//		System.out.println(fat32.cd("\\dir\\a\\spec"));
-
-//		System.out.println(fat32.getCurrDir());
-//		System.out.println(fat32.ls("..\\..\\..\\"));
-
-//		System.out.println(fat32.cd("..\\..\\..\\"));
-//		System.out.println(fat32.getCurrDir());
-//		System.out.println(fat32.size("const.txt"));
-//		System.out.println(fat32.read("\\const.txt", 45118, 1));
-
+	public static void main(String[] args) {
+		if (!new File(args[0]).exists()) {
+			System.err.println("File does not exist. Exiting...");
+			return;
+		}
+		ISOHandler fat32;
+		try {
+			fat32 = new ISOHandler(args[0]);
+		} catch (IOException e) {
+			System.err.println("Could not open file");
+			e.printStackTrace();
+			return;
+		}
 		// scan infinitely for commands
 		while (true) {
 			System.out.print(fat32.getWorkingDirectory() + "] ");
