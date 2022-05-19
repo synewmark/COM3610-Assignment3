@@ -15,8 +15,7 @@
     - Shell.java is the high level part of our programw which contains the while loop that infinately scans for new user inputs, and sends the users commands to the ISOHandler.java, compelting the requested task.
 
 # Compile Instructions
-As we use Apache Maven to manage our code, to compile our code one must be in the root folder where the "src" folder exists, and run "mvn compile".
+To compile our code one must be in the root folder where the "src" folder exists, and run "javac src/main/java/edu/yu/os/*.java".
 
 # Running Instructions
-
-# Challenges
+To run our code one must first execute "cd src/main/java/" and then run "java edu.yu.os.Shell <FAT32 FILE_PATH>".
