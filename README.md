@@ -19,3 +19,6 @@ To compile our code one must be in the root folder where the "src" folder exists
 
 # Running Instructions
 To run our code one must first execute "cd src/main/java/" and then run "java edu.yu.os.Shell <FAT32 FILE_PATH>".
+
+# Challenges
+- Initially had issues leanring the proccess and math logic on how to access and go through file systems. In particular one major difficulty was "cd ..". In particular, the fact that the cluster # for ".." from a directory just below root is 0 and not 2 was a major source of headaches.
