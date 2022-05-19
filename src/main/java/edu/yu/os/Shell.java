@@ -9,7 +9,7 @@ public class Shell {
 	public static void main(String[] args) throws IOException {
 		// ISOHandler iso = new ISOHandler(args[0]);
 		ISOHandler fat32 = new ISOHandler(args[0]);
-		fat32.ls("/");
+//		fat32.ls("/");
 //		Fat32File fatFile = fat32.getFileFat(new File("dir/a/spec/"));
 //		System.out.println("File name: " + fatFile.filename);
 //		System.out.println("File size: " + fatFile.size);
@@ -34,7 +34,7 @@ public class Shell {
 //		System.out.println(fat32.size("const.txt"));
 //		System.out.println(fat32.read("\\const.txt", 45118, 1));
 
-		// scan infinitaley for commands
+		// scan infinitely for commands
 		while (true) {
 			System.out.print(fat32.getWorkingDirectory() + "] ");
 			String command = s.nextLine();
@@ -44,7 +44,7 @@ public class Shell {
 				stop();
 				break;
 			case "info":
-				System.out.println(info());
+				System.out.println(fat32.info());
 				break;
 			case "ls":
 				if (commandArray.length > 1) {
@@ -60,9 +60,16 @@ public class Shell {
 				System.out.println(fat32.size(commandArray[1]));
 				break;
 			case "cd":
-				System.out.println(fat32.cd(commandArray[1]));
+				String returnValue = fat32.cd(commandArray[1]);
+				if (!returnValue.isEmpty()) {
+					System.out.println(returnValue);
+				}
 				break;
 			case "read":
+				if (commandArray.length < 4) {
+					System.out.println("ERROR insufficent parameters. Please include a file name, offset, and length");
+					continue;
+				}
 				System.out.println(fat32.read(commandArray[1], Integer.parseInt(commandArray[2]),
 						Integer.parseInt(commandArray[3])));
 				break;
@@ -90,12 +97,12 @@ public class Shell {
 				+ Integer.toString(ISOHandler.BytePerSector) + "\n");
 		sb.append("BPB_SecPerClus: is 0x" + Integer.toHexString(ISOHandler.SectorPerCluster) + " "
 				+ Integer.toString(ISOHandler.SectorPerCluster) + "\n");
-		sb.append("BPB_RsvdSecCnt: is 0x" + Integer.toHexString(ISOHandler.ReservedSectorCount) + " "
-				+ Integer.toString(ISOHandler.ReservedSectorCount) + "\n");
-		sb.append("BPB_NumFATS: is 0x" + Integer.toHexString(ISOHandler.FATCount) + " "
-				+ Integer.toString(ISOHandler.FATCount) + "\n");
-		sb.append("BPB_FATSz32: is 0x" + Integer.toHexString(ISOHandler.FATSize) + " "
-				+ Integer.toString(ISOHandler.FATSize) + "\n");
+		sb.append("BPB_RsvdSecCnt: is 0x" + Integer.toHexString(ISOHandler.reservedSectorCount) + " "
+				+ Integer.toString(ISOHandler.reservedSectorCount) + "\n");
+		sb.append("BPB_NumFATS: is 0x" + Integer.toHexString(ISOHandler.fatCount) + " "
+				+ Integer.toString(ISOHandler.fatCount) + "\n");
+		// sb.append("BPB_FATSz32: is 0x" + Integer.toHexString(ISOHandler.FATSize) + " "
+		// 		+ Integer.toString(ISOHandler.FATSize) + "\n");
 		return sb.toString();
 	}
 
@@ -107,7 +114,6 @@ public class Shell {
 	 * example below). (Note: The size of a directory will always be zero.)
 	 */
 	private static String stat(String file_path) {
-		System.exit(0);
 		return "";
 	}
 }
