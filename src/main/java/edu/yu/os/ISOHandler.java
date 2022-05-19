@@ -9,19 +9,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ISOHandler {
-	private static final int RootFat = 2;
 	private static final int BytePerSector = 512;
+
 	private final Fat32File rootFatFile;
+	private Fat32File currFatFile;
 
-	private int fat32Start;
-	private int clusterStart;
-	private short SectorPerCluster;
-	private int entireSectorSize;
-
-	private int currFat;
+	private final int fat32Start;
+	private final int clusterStart;
+	private final short SectorPerCluster;
+	private final int entireSectorSize;
+	private final int reservedSectorCount;
+	private final int fatCount;
 
 	private final StringBuilder returnMessage = new StringBuilder(100);
 
@@ -34,12 +36,12 @@ public class ISOHandler {
 			System.out.println("Error: File must be an .img file");
 			System.exit(0); // ! CHANGE THIS!
 		}
-		try {
-			byte[] bytes = Files.readAllBytes(Paths.get(iso_path));
-		} catch (IOException e) {
-			System.out.println("Error: File not found");
-			System.exit(1); // ! CHANGE THIS!
-		}
+//		try {
+//			byte[] bytes = Files.readAllBytes(Paths.get(iso_path));
+//		} catch (IOException e) {
+//			System.out.println("Error: File not found");
+//			System.exit(1); // ! CHANGE THIS!
+//		}
 
 		byte[] bytes = Files.readAllBytes(Paths.get(iso_path));
 		ByteBuffer BootSector = ByteBuffer.allocate(64);
@@ -47,17 +49,18 @@ public class ISOHandler {
 		BootSector.order(ByteOrder.LITTLE_ENDIAN);
 //		short BytePerSector = BootSector.getShort(0x0B);
 		SectorPerCluster = BootSector.get(0x0D);
-		short ReservedSectorCount = BootSector.get(0x0E);
-		short FATCount = BootSector.getShort(0x10);
+		reservedSectorCount = BootSector.get(0x0E);
+		fatCount = BootSector.getShort(0x10);
 		int SectorsPerFAT = BootSector.getInt(0x24);
 		entireSectorSize = SectorPerCluster * BytePerSector;
-		fat32 = new RandomAccessFile(new File("./fat32.img"), "r");
-		clusterStart = (ReservedSectorCount + (FATCount * SectorsPerFAT)) * BytePerSector;
-		fat32Start = ReservedSectorCount * BytePerSector;
+		fat32 = new RandomAccessFile(new File(iso_path), "r");
+		clusterStart = (reservedSectorCount + (fatCount * SectorsPerFAT)) * BytePerSector;
+		fat32Start = reservedSectorCount * BytePerSector;
 //		currentDirectory = fat32Start * BytePerSector;
 		fat32.seek(clusterStart);
-		currFat = RootFat;
 		rootFatFile = getRootFatFile();
+		currFatFile = rootFatFile;
+
 	}
 
 	public String getCurrDir() {
@@ -81,7 +84,7 @@ public class ISOHandler {
 			returnMessage.setLength(0);
 			return (fat32.filename + " is not a directory");
 		}
-		currFat = fat32.cluster != 0 ? fat32.cluster : 2;
+		currFatFile = fat32;
 		currDir = new File(returnMessage.toString());
 		returnMessage.setLength(0);
 		return "";
@@ -101,7 +104,9 @@ public class ISOHandler {
 			return returnAndClearBuffer();
 		}
 		returnMessage.setLength(0);
-		for (Fat32File df : getContentsOfDir(dir.cluster)) {
+		var dirList = getContentsOfDir(dir.cluster);
+		Collections.sort(dirList);
+		for (Fat32File df : dirList) {
 			returnMessage.append(df.filename + " ");
 		}
 		String returnMsg = returnMessage.toString();
@@ -121,7 +126,11 @@ public class ISOHandler {
 		if (fatFile == null) {
 			return returnAndClearBuffer();
 		}
-		return Integer.toString(fatFile.size);
+		returnMessage.setLength(0);
+		if (fatFile.directory) {
+
+		}
+		return "Size of: " + file_path.toUpperCase() + " is " + Integer.toString(fatFile.size) + " bytes";
 	}
 
 	/*
@@ -134,16 +143,20 @@ public class ISOHandler {
 	 */
 	// returns contents if successful, otherwise returns err msg
 	public String read(String filename, long offset, long num_bytes) throws IOException {
-		Fat32File fat32File = getFileFat(new File(filename));
-		if (fat32File == null) {
-			return returnAndClearBuffer();
+		if (offset < 0) {
+			return "Error: OFFSET must be a positive value";
 		}
+		if (num_bytes <= 0) {
+			return "Error: NUM_BYTES must be a greater than zero";
+		}
+		Fat32File fat32File = getFileFat(new File(filename));
 		returnMessage.setLength(0);
-		if (fat32File.directory) {
-			return (fat32File.filename + " is a directory.");
+
+		if (fat32File == null || fat32File.directory) {
+			return "ERROR: " + filename.toString().toUpperCase() + " is not a file";
 		}
 		if (fat32File.size < (offset + num_bytes)) {
-			return ("File size too small");
+			return ("ERROR: Attempt to read data outside of file bounds");
 		}
 		int clusterNumber = fat32File.cluster;
 
@@ -173,12 +186,14 @@ public class ISOHandler {
 
 	public Fat32File getFileFat(File file) {
 		if (file.toString().equals(File.separator)) {
-			returnMessage.append(File.separatorChar);
 			return rootFatFile;
 		}
-		int currPos = isAbsolute(file) ? RootFat : currFat;
-		File movingDir = isAbsolute(file) ? new File(File.separator) : currDir;
-		Fat32File returnDirectory = currPos == RootFat ? rootFatFile : null;
+		if (file.toString().isBlank()) {
+			return currFatFile;
+		}
+		int currPos = isAbsolute(file) ? rootFatFile.cluster : currFatFile.cluster;
+		File movingDir = isAbsolute(file) ? new File("") : currDir;
+		Fat32File returnDirectory = currPos == rootFatFile.cluster ? rootFatFile : null;
 		findnextpath: for (Path path : file.toPath()) {
 			String pathName = path.toString();
 			if (pathName.equals(".")) {
@@ -186,12 +201,12 @@ public class ISOHandler {
 			}
 
 			if (returnDirectory != null && !returnDirectory.directory) {
-				returnMessage.append(returnDirectory.filename + " is not a directory");
+				returnMessage.append("Error: " + file.toString().toUpperCase() + " is not a directory");
 				return null;
 			}
 			for (Fat32File df : getContentsOfDir(currPos)) {
-				if (pathName.equals("..") && currPos == RootFat) {
-					returnMessage.append("Could not cd .. from root");
+				if (pathName.equals("..") && currPos == rootFatFile.cluster) {
+					returnMessage.append("Error: can not cd .. from root");
 					return null;
 				}
 				if (df.filename.equalsIgnoreCase(pathName)) {
@@ -209,7 +224,7 @@ public class ISOHandler {
 				}
 			}
 			// if continue fails, i.e. a matching directory could not be found
-			returnMessage.append("Could not find path: " + pathName + " in path: " + file);
+			returnMessage.append("Error: " + file.toString().toUpperCase() + " is not a directory");
 			return null;
 		}
 		returnMessage.append(movingDir.toString());
@@ -267,7 +282,7 @@ public class ISOHandler {
 					returnArray.add(df);
 					continue;
 				}
-				if (buffer[i] == 'A' && ((buffer[i + 11]) & 0x0F) == 0x0F) {
+				if (((buffer[i + 11]) & 0x0F) == 0x0F) {
 					continue;
 				}
 				if (buffer[i] == (byte) 0xE5) {
@@ -287,11 +302,14 @@ public class ISOHandler {
 
 	private Fat32File getRootFatFile() {
 		byte[] buffer = new byte[32];
-		readFromCluster(RootFat, buffer);
+		readFromCluster(2, buffer);
 		for (int i = 0; i < 11; i++) {
 			buffer[i] = ' ';
 		}
 		buffer[11] = 1 << 4;
+		buffer[20] = 0;
+		buffer[21] = 0;
+		buffer[27] = 0;
 		buffer[26] = 2;
 		return new Fat32File(buffer, 0);
 	}
@@ -310,7 +328,16 @@ public class ISOHandler {
 		return msg;
 	}
 
-	static class Fat32File {
+	/*
+	 * Description: prints out information about the following fields in both hex
+	 * and base 10. Be careful to use the proper endian-ness: o BPB_BytesPerSec o
+	 * BPB_SecPerClus o BPB_RsvdSecCnt o BPB_NumFATS o BPB_FATSz32
+	 */
+	public String info() {
+		return "";
+	}
+
+	static class Fat32File implements Comparable<Fat32File> {
 		final String filename;
 		int cluster;
 		final int size;
@@ -358,6 +385,11 @@ public class ISOHandler {
 			archive = ((attribute & 1) == 1);
 			attribute >>= 1;
 
+		}
+
+		@Override
+		public int compareTo(Fat32File o) {
+			return this.filename.compareTo(o.filename);
 		}
 	}
 }

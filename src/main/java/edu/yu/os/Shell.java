@@ -9,7 +9,7 @@ public class Shell {
 	public static void main(String[] args) throws IOException {
 		// ISOHandler iso = new ISOHandler(args[0]);
 		ISOHandler fat32 = new ISOHandler(args[0]);
-		fat32.ls("/");
+//		fat32.ls("/");
 //		Fat32File fatFile = fat32.getFileFat(new File("dir/a/spec/"));
 //		System.out.println("File name: " + fatFile.filename);
 //		System.out.println("File size: " + fatFile.size);
@@ -34,7 +34,7 @@ public class Shell {
 //		System.out.println(fat32.size("const.txt"));
 //		System.out.println(fat32.read("\\const.txt", 45118, 1));
 
-		// scan infinitaley for commands
+		// scan infinitely for commands
 		while (true) {
 			System.out.print(fat32.getWorkingDirectory() + "] ");
 			String command = s.nextLine();
@@ -44,7 +44,7 @@ public class Shell {
 				stop();
 				break;
 			case "info":
-				System.out.println(info());
+				System.out.println(fat32.info());
 				break;
 			case "ls":
 				if (commandArray.length > 1) {
@@ -60,9 +60,16 @@ public class Shell {
 				System.out.println(fat32.size(commandArray[1]));
 				break;
 			case "cd":
-				System.out.println(fat32.cd(commandArray[1]));
+				String returnValue = fat32.cd(commandArray[1]);
+				if (!returnValue.isEmpty()) {
+					System.out.println(returnValue);
+				}
 				break;
 			case "read":
+				if (commandArray.length < 4) {
+					System.out.println("ERROR insufficent parameters. Please include a file name, offset, and length");
+					continue;
+				}
 				System.out.println(fat32.read(commandArray[1], Integer.parseInt(commandArray[2]),
 						Integer.parseInt(commandArray[3])));
 				break;
@@ -80,15 +87,6 @@ public class Shell {
 	}
 
 	/*
-	 * Description: prints out information about the following fields in both hex
-	 * and base 10. Be careful to use the proper endian-ness: o BPB_BytesPerSec o
-	 * BPB_SecPerClus o BPB_RsvdSecCnt o BPB_NumFATS o BPB_FATSz32
-	 */
-	private static String info() {
-		return "";
-	}
-
-	/*
 	 * Description: For the file or directory at the relative or absolute path
 	 * specified in FILE_NAME or DIR_NAME, prints the size of the file or directory,
 	 * the attributes of the file or directory, and the first cluster number of the
@@ -96,7 +94,6 @@ public class Shell {
 	 * example below). (Note: The size of a directory will always be zero.)
 	 */
 	private static String stat(String file_path) {
-		System.exit(0);
 		return "";
 	}
 }
