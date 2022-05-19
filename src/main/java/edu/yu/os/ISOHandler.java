@@ -154,7 +154,7 @@ public class ISOHandler {
 		Fat32File fat32File = getFileFat(new File(filename));
 		returnMessage.setLength(0);
 
-		if (fat32File == null || fat32File.directory) {
+		if (fat32File == null || fat32File.directory || fat32File.volumeid) {
 			return "ERROR: " + filename.toString().toUpperCase() + " is not a file";
 		}
 		if (fat32File.size < (offset + num_bytes)) {
