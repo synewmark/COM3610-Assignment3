@@ -367,11 +367,14 @@ public class ISOHandler {
 		if (fat32.volumeid) {
 			returnMessage.append(" ATTR_VOLUME_ID");
 		}
+		if (fat32.directory) {
+			returnMessage.append(" ATTR_DIRECTORY");
+		}
 		if (fat32.archive) {
 			returnMessage.append(" ATTR_ARCHIVE");
 		}
 		returnMessage.append("\nNext cluster number is ");
-		returnMessage.append(Integer.toHexString(fat32.cluster));
+		returnMessage.append(String.format("0x%04x", fat32.cluster));
 		return returnAndClearBuffer();
 	}
 
