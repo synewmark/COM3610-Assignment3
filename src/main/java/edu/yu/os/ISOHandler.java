@@ -339,6 +339,42 @@ public class ISOHandler {
 		return "";
 	}
 
+	/*
+	 * Description: For the file or directory at the relative or absolute path
+	 * specified in FILE_NAME or DIR_NAME, prints the size of the file or directory,
+	 * the attributes of the file or directory, and the first cluster number of the
+	 * file or directory. Return an error if FILE_NAME/DIR_NAME does not exist (see
+	 * example below). (Note: The size of a directory will always be zero.)
+	 */
+	public String stat(String file_path) {
+		Fat32File fat32 = getFileFat(new File(file_path));
+		returnMessage.setLength(0);
+		if (fat32 == null) {
+			return "Error: file/directory does not exist";
+		}
+		returnMessage.append("Size is ");
+		returnMessage.append(fat32.size);
+		returnMessage.append("\nAttributes");
+		if (fat32.readonly) {
+			returnMessage.append(" ATTR_READ_ONLY");
+		}
+		if (fat32.hidden) {
+			returnMessage.append(" ATTR_HIDDEN");
+		}
+		if (fat32.system) {
+			returnMessage.append(" ATTR_SYSTEM");
+		}
+		if (fat32.volumeid) {
+			returnMessage.append(" ATTR_VOLUME_ID");
+		}
+		if (fat32.archive) {
+			returnMessage.append(" ATTR_ARCHIVE");
+		}
+		returnMessage.append("\nNext cluster number is ");
+		returnMessage.append(Integer.toHexString(fat32.cluster));
+		return returnAndClearBuffer();
+	}
+
 	static class Fat32File implements Comparable<Fat32File> {
 		final String filename;
 		int cluster;

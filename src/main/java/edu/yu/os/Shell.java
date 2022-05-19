@@ -54,7 +54,7 @@ public class Shell {
 				}
 				break;
 			case "stat":
-				System.out.println(stat("file_path"));
+				System.out.println(fat32.stat(commandArray[1]));
 				break;
 			case "size":
 				System.out.println(fat32.size(commandArray[1]));
