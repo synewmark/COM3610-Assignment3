@@ -332,9 +332,7 @@ public class ISOHandler {
 		sb.append("BPB_RsvdSecCnt: is 0x" + Integer.toHexString(reservedSectorCount) + " "
 				+ Integer.toString(reservedSectorCount) + "\n");
 		sb.append("BPB_NumFATS: is 0x" + Integer.toHexString(fatCount) + " " + Integer.toString(fatCount) + "\n");
-		// sb.append("BPB_FATSz32: is 0x" + Integer.toHexString(ISOHandler.FATSize) + "
-		// "
-		// + Integer.toString(ISOHandler.FATSize) + "\n");
+		sb.append("BPB_FATSz32: is 0x" + Integer.toHexString(fatSize) + " " + Integer.toString(fatSize) + "\n");
 		return sb.toString();
 	}
 

@@ -54,12 +54,24 @@ public class Shell {
 				}
 				break;
 			case "stat":
+				if (commandArray.length < 2) {
+					System.out.println("ERROR: stat requires 2 arguements");
+					continue;
+				}
 				System.out.println(fat32.stat(commandArray[1]));
 				break;
 			case "size":
+				if (commandArray.length < 2) {
+					System.out.println("ERROR: size requires 2 arguements");
+					continue;
+				}
 				System.out.println(fat32.size(commandArray[1]));
 				break;
 			case "cd":
+				if (commandArray.length < 2) {
+					System.out.println("ERROR: cd requires 2 arguements");
+					continue;
+				}
 				String returnValue = fat32.cd(commandArray[1]);
 				if (!returnValue.isEmpty()) {
 					System.out.println(returnValue);
