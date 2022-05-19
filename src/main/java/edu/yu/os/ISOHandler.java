@@ -22,8 +22,9 @@ public class ISOHandler {
 	private int clusterStart;
 	public static short SectorPerCluster;
 	private int entireSectorSize;
-	public static short reservedSectorCount;
-	public static short fatCount;
+	public final short reservedSectorCount;
+	public final short fatCount;
+	public final int fatSize;
 
 	private int currFat;
 
@@ -34,31 +35,18 @@ public class ISOHandler {
 	RandomAccessFile fat32;
 
 	public ISOHandler(String iso_path) throws IOException {
-		if (!iso_path.endsWith(".img")) {
-			System.out.println("Error: File must be an .img file");
-			System.exit(0); // ! CHANGE THIS!
-		}
-//		try {
-//			byte[] bytes = Files.readAllBytes(Paths.get(iso_path));
-//		} catch (IOException e) {
-//			System.out.println("Error: File not found");
-//			System.exit(1); // ! CHANGE THIS!
-//		}
-
 		byte[] bytes = Files.readAllBytes(Paths.get(iso_path));
 		ByteBuffer BootSector = ByteBuffer.allocate(64);
 		BootSector.put(bytes, 0, 64);
 		BootSector.order(ByteOrder.LITTLE_ENDIAN);
-//		short BytePerSector = BootSector.getShort(0x0B);
 		SectorPerCluster = BootSector.get(0x0D);
 		reservedSectorCount = BootSector.get(0x0E);
 		fatCount = BootSector.getShort(0x10);
-		int SectorsPerFAT = BootSector.getInt(0x24);
+		fatSize = BootSector.getInt(0x24);
 		entireSectorSize = SectorPerCluster * BytePerSector;
 		fat32 = new RandomAccessFile(new File(iso_path), "r");
-		clusterStart = (reservedSectorCount + (fatCount * SectorsPerFAT)) * BytePerSector;
+		clusterStart = (reservedSectorCount + (fatCount * fatSize)) * BytePerSector;
 		fat32Start = reservedSectorCount * BytePerSector;
-//		currentDirectory = fat32Start * BytePerSector;
 		fat32.seek(clusterStart);
 		rootFatFile = getRootFatFile();
 		currFatFile = rootFatFile;
@@ -336,7 +324,18 @@ public class ISOHandler {
 	 * BPB_SecPerClus o BPB_RsvdSecCnt o BPB_NumFATS o BPB_FATSz32
 	 */
 	public String info() {
-		return "";
+		StringBuilder sb = new StringBuilder();
+		sb.append("BPB_BytesPerSec: is 0x" + Integer.toHexString(BytePerSector) + " " + Integer.toString(BytePerSector)
+				+ "\n");
+		sb.append("BPB_SecPerClus: is 0x" + Integer.toHexString(SectorPerCluster) + " "
+				+ Integer.toString(SectorPerCluster) + "\n");
+		sb.append("BPB_RsvdSecCnt: is 0x" + Integer.toHexString(reservedSectorCount) + " "
+				+ Integer.toString(reservedSectorCount) + "\n");
+		sb.append("BPB_NumFATS: is 0x" + Integer.toHexString(fatCount) + " " + Integer.toString(fatCount) + "\n");
+		// sb.append("BPB_FATSz32: is 0x" + Integer.toHexString(ISOHandler.FATSize) + "
+		// "
+		// + Integer.toString(ISOHandler.FATSize) + "\n");
+		return sb.toString();
 	}
 
 	/*

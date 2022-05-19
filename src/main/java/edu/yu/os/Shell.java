@@ -85,35 +85,4 @@ public class Shell {
 	private static void stop() {
 		System.exit(0);
 	}
-
-	/*
-	 * Description: prints out information about the following fields in both hex
-	 * and base 10. Be careful to use the proper endian-ness: o BPB_BytesPerSec o
-	 * BPB_SecPerClus o BPB_RsvdSecCnt o BPB_NumFATS o BPB_FATSz32
-	 */
-	private static String info() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("BPB_BytesPerSec: is 0x" + Integer.toHexString(ISOHandler.BytePerSector) + " "
-				+ Integer.toString(ISOHandler.BytePerSector) + "\n");
-		sb.append("BPB_SecPerClus: is 0x" + Integer.toHexString(ISOHandler.SectorPerCluster) + " "
-				+ Integer.toString(ISOHandler.SectorPerCluster) + "\n");
-		sb.append("BPB_RsvdSecCnt: is 0x" + Integer.toHexString(ISOHandler.reservedSectorCount) + " "
-				+ Integer.toString(ISOHandler.reservedSectorCount) + "\n");
-		sb.append("BPB_NumFATS: is 0x" + Integer.toHexString(ISOHandler.fatCount) + " "
-				+ Integer.toString(ISOHandler.fatCount) + "\n");
-		// sb.append("BPB_FATSz32: is 0x" + Integer.toHexString(ISOHandler.FATSize) + " "
-		// 		+ Integer.toString(ISOHandler.FATSize) + "\n");
-		return sb.toString();
-	}
-
-	/*
-	 * Description: For the file or directory at the relative or absolute path
-	 * specified in FILE_NAME or DIR_NAME, prints the size of the file or directory,
-	 * the attributes of the file or directory, and the first cluster number of the
-	 * file or directory. Return an error if FILE_NAME/DIR_NAME does not exist (see
-	 * example below). (Note: The size of a directory will always be zero.)
-	 */
-	private static String stat(String file_path) {
-		return "";
-	}
 }
