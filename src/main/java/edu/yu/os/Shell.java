@@ -85,7 +85,18 @@ public class Shell {
 	 * BPB_SecPerClus o BPB_RsvdSecCnt o BPB_NumFATS o BPB_FATSz32
 	 */
 	private static String info() {
-		return "";
+		StringBuilder sb = new StringBuilder();
+		sb.append("BPB_BytesPerSec: is 0x" + Integer.toHexString(ISOHandler.BytePerSector) + " "
+				+ Integer.toString(ISOHandler.BytePerSector) + "\n");
+		sb.append("BPB_SecPerClus: is 0x" + Integer.toHexString(ISOHandler.SectorPerCluster) + " "
+				+ Integer.toString(ISOHandler.SectorPerCluster) + "\n");
+		sb.append("BPB_RsvdSecCnt: is 0x" + Integer.toHexString(ISOHandler.ReservedSectorCount) + " "
+				+ Integer.toString(ISOHandler.ReservedSectorCount) + "\n");
+		sb.append("BPB_NumFATS: is 0x" + Integer.toHexString(ISOHandler.FATCount) + " "
+				+ Integer.toString(ISOHandler.FATCount) + "\n");
+		sb.append("BPB_FATSz32: is 0x" + Integer.toHexString(ISOHandler.FATSize) + " "
+				+ Integer.toString(ISOHandler.FATSize) + "\n");
+		return sb.toString();
 	}
 
 	/*

@@ -13,13 +13,15 @@ import java.util.List;
 
 public class ISOHandler {
 	private static final int RootFat = 2;
-	private static final int BytePerSector = 512;
+	public static final int BytePerSector = 512;
 	private final Fat32File rootFatFile;
 
 	private int fat32Start;
 	private int clusterStart;
-	private short SectorPerCluster;
+	public static short SectorPerCluster;
 	private int entireSectorSize;
+	public static short ReservedSectorCount;
+	public static short FATCount;
 
 	private int currFat;
 
@@ -47,8 +49,8 @@ public class ISOHandler {
 		BootSector.order(ByteOrder.LITTLE_ENDIAN);
 //		short BytePerSector = BootSector.getShort(0x0B);
 		SectorPerCluster = BootSector.get(0x0D);
-		short ReservedSectorCount = BootSector.get(0x0E);
-		short FATCount = BootSector.getShort(0x10);
+		ReservedSectorCount = BootSector.get(0x0E);
+		FATCount = BootSector.getShort(0x10);
 		int SectorsPerFAT = BootSector.getInt(0x24);
 		entireSectorSize = SectorPerCluster * BytePerSector;
 		fat32 = new RandomAccessFile(new File("./fat32.img"), "r");
