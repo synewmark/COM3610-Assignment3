@@ -205,6 +205,7 @@ public class ISOHandler {
 					if (pathName.equals("..")) {
 						if (df.cluster == 0) {
 							df.cluster = 2;
+							currPos = 2;
 						}
 						movingDir = movingDir.getParentFile();
 					} else {
