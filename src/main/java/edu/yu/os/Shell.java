@@ -24,7 +24,7 @@ public class Shell {
 		while (true) {
 			System.out.print(fat32.getWorkingDirectory() + "] ");
 			String command = s.nextLine();
-			String[] commandArray = command.split(" ");
+			String[] commandArray = command.split("\\s+");
 			switch (commandArray[0]) {
 			case "stop":
 				stop();
